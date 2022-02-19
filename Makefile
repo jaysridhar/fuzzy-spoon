@@ -26,11 +26,5 @@ ssh-tunnel:
 	ssh -nNf -M $(SSH_USER)
 	ssh -S $(HOME)/.ssh/controlmasters/$(SSH_USER) -nNf -L $(RSYNC_PORT):localhost:4321 $(SSH_USER)
 
-serve:
-	python manage.py 127.0.0.1:8000
-
-setup:
-	pip install -r requirements.txt
-
 clean:
 	find $(LOCAL_DIR) -name '*~' -exec rm {} \;
