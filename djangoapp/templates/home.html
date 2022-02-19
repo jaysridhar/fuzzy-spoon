@@ -1,0 +1,17 @@
+{%extends "base_home.html"%}
+
+{%block main_content%}
+{%if user.is_authenticated%}
+<div class="row">
+  <div class="col">
+    <p class="text-center p-4 text-2xl">Thank you for logging in.</p>
+  </div>
+</div>
+{%else%}
+<div class="row">
+  <div class="col">
+    <p class="text-center p-4 text-2xl">You need to login to view content.</p>
+  </div>
+</div>
+{%endif%}
+{%endblock%}
