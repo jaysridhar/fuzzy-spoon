@@ -1,0 +1,12 @@
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        index index.html;
+        server_name _;
+        location = /favicon.ico { access_log off; log_not_found off; }
+        location /assets/ { root /opt/webapp/djangoapp/; }
+        location / {
+                proxy_pass http://127.0.0.1:8000/; # <- trailing slash required
+                proxy_set_header X-Forwarded-Host $host;
+        }
+}

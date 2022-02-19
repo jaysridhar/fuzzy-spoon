@@ -34,3 +34,22 @@
 </div>
 {%endif%}
 {%endblock%}
+
+{%load static%}
+
+{%block js_footer%}
+<script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+<script src="{%static 'lib/jquery-3.5.1.min.js'%}"></script>
+<script src="{%static 'lib/nunjucks.min.js'%}"></script>
+<script src="{%static 'bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+<script src="{%static 'bootstrap-table/bootstrap-table.js'%}"></script>
+<script src="{%static 'bootstrap-table/extensions/cookie/bootstrap-table-cookie.js'%}"></script>
+<script src="{%static 'bootstrap-table/extensions/multiple-sort/bootstrap-table-multiple-sort.js'%}"></script>
+<script src="{%static 'jQuery-contextMenu/jquery.contextMenu.min.js'%}"></script>
+<script src="{%static 'jQuery-contextMenu/jquery.ui.position.min.js'%}"></script>
+<script src="{%static 'sweetalert2/sweetalert2.all.min.js'%}"></script>
+<script src="{%static 'jquery-ui/jquery-ui.min.js'%}"></script>
+<script src="{%static 'sprintf.js/sprintf.min.js'%}"></script>
+<script src="/assets/js/bundle.app.js?t={% now 'U'%}"></script>
+{%endblock%}
