@@ -1,6 +1,6 @@
       RSYNC_EXCLUDE = --exclude '*~' --exclude '.\#*' --exclude '\#*\#' --exclude '*.log' \
 		      --exclude __pycache__ --exclude 'venv*' --exclude node_modules \
-		      --exclude package.json --exclude package-lock.json --exclude db.sqlite3
+		      --exclude package-lock.json --exclude db.sqlite3
 
              SERVER = 136.243.155.232
 
