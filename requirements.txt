@@ -4,3 +4,4 @@ djangorestframework
 django-environ
 mysql-connector
 mysqlclient
+googlemaps

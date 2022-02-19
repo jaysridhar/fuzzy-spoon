@@ -9,5 +9,6 @@ class UserLocation(models.Model):
     altitude_accuracy = models.FloatField(null=True)
     heading = models.FloatField(null=True)
     speed = models.FloatField(null=True)
+    google_maps_location = models.TextField(null=True)
     class Meta:
         db_table = 'user_location'
