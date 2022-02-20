@@ -1,0 +1,52 @@
+{%extends "base.html"%}
+{%load static%}
+
+{%block css_header%}
+<link rel="stylesheet" href="{%static 'css/login.css'%}">
+{%endblock%}
+
+{%block content%}
+<div class="wrapper fadeInDown">
+  <div id="formContent">
+    <h2 class="active">Code Sent</h2>
+    <div class="m-4 row">
+      <div class="col">
+	<p>
+	  {%if sent.phone and sent.email%}
+	  Enter the code sent to your mobile or email below.
+	  {%elif sent.phone%}
+	  Enter the code sent to your mobile below.
+	  {%else%}
+	  Enter the code sent to your email below.
+	  {%endif%}
+	</p>
+      </div>
+    </div>
+    <form method="post" action="/auth/verify/">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <input type="hidden" name="timestamp" value="{{ timestamp }}">
+      <div class="form-group">
+	<input type="text"
+	       class="fadeIn second"
+	       name="authcode"
+	       maxlength="254"
+	       class="form-control"
+	       placeholder="enter verification code"
+	       autofocus required>
+      </div>
+      {%if error%}
+      <div class="my-4 error text-red-500">
+	{{error}}
+      </div>
+      {%endif%}
+      <div class="form-group">
+	<input type="submit" class="fadeIn fourth" value="Next">
+      </div>
+    </form>
+    <div id="formFooter">
+      Click <b>Next</b> to continue.
+    </div>
+  </div>
+</div>
+{%endblock%}

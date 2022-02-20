@@ -1,0 +1,55 @@
+{%extends "base.html"%}
+{%load static%}
+
+{%block css_header%}
+<link rel="stylesheet" href="{%static 'css/login.css'%}">
+{%endblock%}
+
+{%block content%}
+<div class="wrapper fadeInDown">
+  <div id="formContent">
+    <h2 class="active">Vasolabs Password Reset</h2>
+    {%if success%}
+    <div class="row mb-4">
+      <div class="col error-mesg">
+	<p class="text-green-500">Password has been changed.</p>
+	Click <a href="{{success}}">here</a> to login
+	<span class="text-gray-400 italic text-sm">or wait a couple of seconds.</span>
+      </div>
+    </div>
+    {%elif retry%}
+    <form method="post" action="/portal/resetpwd/{{hash_id}}">
+      {% csrf_token %}
+      <div class="form-group">
+	<input type="password"
+	       id="new-pwd"
+	       class="fadeIn second"
+	       name="new-pwd"
+	       placeholder="password"
+	       autofocus required>
+      </div>
+      <div class="form-group">
+	<input type="password"
+	       id="again-pwd"
+	       class="fadeIn third"
+	       name="again-pwd"
+	       placeholder="enter password again"
+	       required>
+      </div>
+      {%if error%}
+      <div class="row mb-4"><div class="col error-mesg text-red-500">{{error}}</div></div>
+      {%endif%}
+      <div class="form-group">
+	<input type="submit" class="fadeIn fourth" value="Reset Password">
+      </div>
+    </form>
+    {%elif error%}
+    <div class="row mb-4"><div class="col error-mesg text-red-500">{{error}}</div></div>
+    {%endif%}
+  </div>
+</div>
+{%endblock%}
+
+{%block js_footer%}
+{%if success%}<script>setTimeout(() => window.location = "{{success}}", 5000)</script>{%endif%}
+{%endblock%}
