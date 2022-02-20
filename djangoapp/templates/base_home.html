@@ -42,7 +42,6 @@
         <div>
 	  {%if user.is_authenticated%}
 	  <span>Logged in as: {{user.email|default:user.username}}</span>
-	  <!-- {%url 'logout'%} -->
           <a href="/auth/logout/"
 	     class="btn btn-outline-light me-2">Logout</a>
 	  {%else%}

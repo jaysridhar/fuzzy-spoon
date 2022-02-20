@@ -4,12 +4,15 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from website.serializers import UserSerializer
 
 L = logging.getLogger(__name__)
 
 # generated using python -c 'import secrets; print(secrets.token_hex())'
 SALT = 'cf106083be2b2ea79700255cec5335fe449ce3f3b0524b3ea267b30f688ae8e7'
 
+@csrf_exempt
 def login_user(request):
     if request.method == 'GET':
         ctx = {}
