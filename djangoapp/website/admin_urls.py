@@ -2,5 +2,6 @@ from django.urls import path
 from website import api
 
 urlpatterns = [
-    path('location', api.save_user_location),
+    path('', api.load_user_location),
+    path('status/<status>', api.load_user_location),
 ]

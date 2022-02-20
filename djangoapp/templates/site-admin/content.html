@@ -29,3 +29,25 @@
     </div>
   </div>
 </div>
+<script type="text/nj-tmpl" id="address-format-tmpl">
+  {%verbatim%}
+  <div style="max-height: 100px; overflow-y: auto;">
+  <table class="table table-striped">
+    <thead>
+      <tr>
+	<th>Type</th>
+	<th>Address</th>
+      </tr>
+    </thead>
+    <tbody>
+      {%for item in addr%}
+      <tr>
+	<td>{{item.types | join(',')}}</td>
+	<td>{{item.formatted_address}}</td>
+      </tr>
+      {%endfor%}
+    </tbody>
+  </table>
+    <div>
+  {%endverbatim%}
+</script>
