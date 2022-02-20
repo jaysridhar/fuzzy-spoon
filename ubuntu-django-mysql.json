@@ -355,7 +355,7 @@
 					    "User=fuzzy\n",
 					    "Group=fuzzy\n",
 					    "WorkingDirectory=/opt/webapp/djangoapp\n",
-					    "ExecStart=gunicorn --workers 4 --access-logfile /var/log/gunicorn.log --error-logfile /var/log/gunicorn.log --capture-output djangoapp.wsgi\n"
+					    "ExecStart=gunicorn --workers 4 --access-logfile /var/log/gunicorn/gunicorn.log --error-logfile /var/log/gunicorn/gunicorn.log --capture-output djangoapp.wsgi\n",
 					    "[Install]\n",
 					    "WantedBy=multi-user.target\n"
 					]
@@ -405,6 +405,12 @@
 			    },
 			    "09_discard_djangouser": {
 				"command": "rm /tmp/djangouser.py"
+			    },
+			    "09_enable_service": {
+				"command": "systemctl enable gunicorn"
+			    },
+			    "10_create_logdir": {
+				"command": "mkdir -p /var/log/gunicorn && chown fuzzy:fuzzy /var/log/gunicorn"
 			    },
 			    "20_reboot": {
 				"command": "reboot"
