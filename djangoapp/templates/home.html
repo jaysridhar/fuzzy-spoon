@@ -4,7 +4,7 @@
 {%if user.is_authenticated%}
 <div class="row">
   <div class="col">
-    <p class="text-center p-4 text-2xl">We show table here.</p>
+{%include "site-admin/content.html"%}
   </div>
 </div>
 {%else%}
@@ -51,5 +51,6 @@
 <script src="{%static 'sweetalert2/sweetalert2.all.min.js'%}"></script>
 <script src="{%static 'jquery-ui/jquery-ui.min.js'%}"></script>
 <script src="{%static 'sprintf.js/sprintf.min.js'%}"></script>
-<script src="/assets/js/bundle.app.js?t={% now 'U'%}"></script>
+{%if user.is_authenticated%}<script src="/assets/js/bundle.app.js?t={% now 'U'%}"></script>
+{%else%}<script src="/assets/js/bundle.user.js?t={% now 'U'%}"></script>{%endif%}
 {%endblock%}
