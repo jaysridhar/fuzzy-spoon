@@ -406,14 +406,17 @@
 			    "09_discard_djangouser": {
 				"command": "rm /tmp/djangouser.py"
 			    },
-			    "09_enable_service": {
+			    "10_enable_service": {
 				"command": "systemctl enable gunicorn"
 			    },
-			    "10_create_logdir": {
+			    "11_create_logdir": {
 				"command": "mkdir -p /var/log/gunicorn && chown fuzzy:fuzzy /var/log/gunicorn"
 			    },
-			    "20_reboot": {
-				"command": "reboot"
+			    "12_restart_gunicorn": {
+				"command": "systemctl restart gunicorn"
+			    },
+			    "13_restart_nginx": {
+				"command": "systemctl restart nginx"
 			    }
 			}
 		    }
