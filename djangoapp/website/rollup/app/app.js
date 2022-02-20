@@ -91,7 +91,9 @@ function setupNew()
 function setupApproved()
 {
     let $tableEl = $('#approved-table');
-    let columns = buildColumns($tableEl);
+    let columns = buildColumns($tableEl),
+	updateBtn = () => $('.approved-btn').prop('disabled', $tableEl.bootstrapTable('getSelections').length == 0),
+	changeBtnState = row => updateBtn();
     $tableEl.bootstrapTable({
 	columns: columns,
 	uniqueId: 'id',
@@ -110,6 +112,10 @@ function setupApproved()
 	showMultiSort: true,
 	sortPriority: [],
 	rowStyle: (row, index) => {return { classes: 'show-completed-menu' }},
+	onCheck: changeBtnState,
+	onCheckAll: changeBtnState,
+	onUncheck: changeBtnState,
+	onUncheckAll: changeBtnState,
 	onLoadSuccess: make_load_complete($tableEl),
 	//onSearch: make_on_search($tableEl),
     })
