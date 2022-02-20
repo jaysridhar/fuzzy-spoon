@@ -5,3 +5,4 @@ django-environ
 mysql-connector
 mysqlclient
 googlemaps
+gunicorn

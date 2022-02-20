@@ -342,6 +342,25 @@
 					]
 				    ]
 				}
+			    },
+			    "/etc/systemd/system/gunicorn.service": {
+				"content": {
+				    "Fn::Join": [
+					"",
+					[
+					    "[Unit]\n",
+					    "Description=Django Service daemon\n",
+					    "After=syslog.target network.target\n",
+					    "[Service]\n",
+					    "User=fuzzy\n",
+					    "Group=fuzzy\n",
+					    "WorkingDirectory=/opt/webapp/djangoapp\n",
+					    "ExecStart=gunicorn --workers 4 --access-logfile /var/log/gunicorn.log --error-logfile /var/log/gunicorn.log --capture-output djangoapp.wsgi\n"
+					    "[Install]\n",
+					    "WantedBy=multi-user.target\n"
+					]
+				    ]
+				}
 			    }
 			},
 			"commands": {
@@ -380,12 +399,15 @@
 				},
 				"cwd": "/opt/webapp/djangoapp"
 			    },
-			    "07_admin_passwd": {
+			    "08_admin_passwd": {
 				"command": "cat /tmp/djangouser.py | python manage.py shell",
 				"cwd": "/opt/webapp/djangoapp"
 			    },
-			    "08_discard_djangouser": {
-				"command": "rm /tmp/djagouser.py"
+			    "09_discard_djangouser": {
+				"command": "rm /tmp/djangouser.py"
+			    },
+			    "20_reboot": {
+				"command": "reboot"
 			    }
 			}
 		    }
