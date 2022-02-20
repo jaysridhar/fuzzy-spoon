@@ -1,0 +1,492 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "EC2 instance with a sample django application demonstrating storing and retrieval of user location",
+    "Metadata": {
+    },
+    "Parameters": {
+        "KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "InstanceType": {
+            "Description": "WebServer EC2 instance type",
+            "Type": "String",
+            "Default": "t2.small",
+            "AllowedValues": [
+                "t1.micro",
+                "t2.nano",
+                "t2.micro",
+                "t2.small"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "SSHLocation": {
+            "Description": "The IP address range that can be used to SSH to the EC2 instances",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+	"DBName" : {
+	    "Default": "appdb",
+	    "Description" : "The database name",
+	    "Type": "String",
+	    "MinLength": "1",
+	    "MaxLength": "64",
+	    "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+	    "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+	},
+	"DBUsername" : {
+	    "Default": "fuzzy",
+	    "Description" : "The database username",
+	    "Type": "String",
+	    "MinLength": "1",
+	    "MaxLength": "16",
+	    "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+	    "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+	},
+	"DBPassword" : {
+	    "NoEcho": "true",
+	    "Description" : "The database user password",
+	    "Type": "String",
+	    "MinLength": "8",
+	    "MaxLength": "41",
+	    "AllowedPattern" : "[a-zA-Z0-9]*",
+	    "ConstraintDescription" : "must contain only alphanumeric characters."
+	},
+	"SiteAdminUsername" : {
+	    "Default": "fuzzyadmin",
+	    "Description" : "Website admin username",
+	    "Type": "String",
+	    "MinLength": "1",
+	    "MaxLength": "16",
+	    "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9]*",
+	    "ConstraintDescription" : "must begin with a letter and contain only alphanumeric characters."
+	},
+	"SiteAdminEmail" : {
+	    "Default": "fuzzyadmin@example.com",
+	    "Description" : "Website admin email",
+	    "Type": "String",
+	    "MinLength": "1",
+	    "AllowedPattern" : "[a-zA-Z][a-zA-Z0-9.-_]*@[a-z0-9.-_]*",
+	    "ConstraintDescription" : "need an email address here."
+	},
+	"SiteAdminPassword" : {
+	    "NoEcho": "true",
+	    "Description" : "Website admin password",
+	    "Type": "String",
+	    "MinLength": "8",
+	    "MaxLength": "41",
+	    "AllowedPattern" : "[a-zA-Z0-9]*",
+	    "ConstraintDescription" : "must contain only alphanumeric characters."
+	},
+	"GoogleMapsAPIKey" : {
+	    "Description" : "API key for Google Maps",
+	    "Type": "String",
+	    "MaxLength": "100",
+	    "AllowedPattern" : "[a-zA-Z0-9_]*",
+	    "ConstraintDescription" : "must contain only alphanumeric characters."
+	},
+	"DBRootPassword" : {
+	    "NoEcho": "true",
+	    "Description" : "The database root password",
+	    "Type": "String",
+	    "MinLength": "8",
+	    "MaxLength": "41",
+	    "AllowedPattern" : "[a-zA-Z0-9]*",
+	    "ConstraintDescription" : "must contain only alphanumeric characters."
+	}
+    },
+    "Mappings": {
+        "AWSRegionAMIEC2": {
+            "us-east-1": {
+                "Ubuntu20": "ami-03d315ad33b9d49c4"
+            },
+            "us-east-2": {
+                "Ubuntu20": "ami-0996d3051b72b5b2c"
+            },
+            "us-west-2": {
+                "Ubuntu20": "ami-0928f4202481dfdf6"
+            },
+            "us-west-1": {
+                "Ubuntu20": "ami-0ebef2838fb2605b7"
+            },
+            "eu-west-1": {
+                "Ubuntu20": "ami-022e8cc8f0d3c52fd"
+            },
+            "eu-central-1": {
+                "Ubuntu20": "ami-0932440befd74cdba"
+            },
+            "ap-northeast-1": {
+                "Ubuntu20": "ami-0e039c7d64008bd84"
+            },
+            "ap-southeast-1": {
+                "Ubuntu20": "ami-09a6a7e49bd29554b"
+            },
+            "ap-southeast-2": {
+                "Ubuntu20": "ami-0d767dd04ac152743"
+            }
+        }
+    },
+    "Resources": {
+        "EC2Instance": {
+            "Type": "AWS::EC2::Instance",
+            "CreationPolicy": {
+                "ResourceSignal": {
+                    "Timeout": "PT7M",
+                    "Count": "1"
+                }
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "full_install": [
+                            "install_and_enable_cfn", "init-app", "setup-database", "final-setup"
+                        ]
+                    },
+                    "install_and_enable_cfn": {
+                        "files": {
+                            "/etc/cfn/cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000400",
+                                "owner": "root",
+                                "group": "root"
+                            },
+                            "/etc/cfn/hooks.d/cfn-auto-reloader.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[cfn-auto-reloader-hook]\n",
+                                            "triggers=post.update\n",
+                                            "path=Resources.EC2Instance.Metadata.AWS::CloudFormation::Init\n",
+                                            "action=/opt/aws/bin/cfn-init -v ",
+                                            "         --stack ",
+                                            {
+                                                "Ref": "AWS::StackName"
+                                            },
+                                            "         --resource EC2Instance ",
+                                            "         --configsets full_install ",
+                                            "         --region ",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n",
+                                            "runas=root\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "/lib/systemd/system/cfn-hup.service": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[Unit]\n",
+                                            "Description=cfn-hup daemon\n\n",
+                                            "[Service]\n",
+                                            "Type=simple\n",
+                                            "ExecStart=/opt/aws/bin/cfn-hup\n",
+                                            "Restart=always\n\n",
+                                            "[Install]\n",
+                                            "WantedBy=multi-user.target"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "01enable_cfn_hup": {
+                                "command": "systemctl enable cfn-hup.service"
+                            },
+                            "02start_cfn_hup": {
+                                "command": "systemctl start cfn-hup.service"
+                            }
+                        }
+                    },
+		    "init-app": {
+			"packages": {
+			    "apt": {
+				"net-tools": [],
+				"fish": [],
+				"emacs-nox": [],
+				"git": [],
+				"python-is-python3": [],
+				"virtualenv": [],
+				"make": [],
+				"mysql-server": [],
+				"libmysqlclient-dev": [],
+				"build-essential": [],
+				"python3-dev": [],
+				"python3-pip": [],
+				"npm": [],
+				"nginx": []
+			    }
+			},
+			"users": {
+			    "fuzzy": {}
+			},
+			"sources": {
+			    "/opt/webapp": "https://github.com/jaysridhar/fuzzy-spoon/tarball/main"
+			},
+			"files": {
+			    "/tmp/setup.mysql" : {
+				"content" : {
+				    "Fn::Join" : ["",
+						  ["CREATE DATABASE ", { "Ref" : "DBName" }, ";\n",
+						   "CREATE USER '", { "Ref" : "DBUsername" }, "'@'%' IDENTIFIED BY '", { "Ref" : "DBPassword" }, "';\n",
+						   "GRANT ALL ON ", { "Ref" : "DBName" }, ".* TO '", { "Ref" : "DBUsername" }, "'@'%';\n",
+						   "FLUSH PRIVILEGES;\n"]
+						 ]
+				},
+				"mode"  : "000644",
+				"owner" : "root",
+				"group" : "root"
+			    },
+			    "/etc/tmux.conf": {
+				"content": "set-option -g prefix C-x\nunbind-key C-b\nbind-key C-x send-prefix\n"
+			    }
+			},
+			"commands": {
+			    "01_setup_nginx_site": {
+				"command": "cp /opt/webapp/nginx/default /etc/nginx/sites-available/default"
+			    },
+			    "02_self_signed_cert": {
+				"command": "openssl req -new -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/ssl/private/nginx-selfsigned.key -out /etc/ssl/certs/nginx-selfsigned.crt -subj '/C=US/ST=NotPresent/L=Springfield/O=Dis/CN=www.example.com'"
+			    },
+			    "03_generate_dhparam": {
+				"command": "openssl dhparam -out /etc/nginx/dhparam.pem 2048"
+			    }
+			},
+			"services": {
+			    "sysvinit" : {
+				"nginx" : {
+				    "enabled" : "true",
+				    "ensureRunning" : "true",
+				    "files" : ["/etc/nginx/nginx.conf"],
+				    "sources" : ["/var/www/html"]
+				}
+			    }
+			}
+		    },
+		    "setup-database": {
+			"files": {
+			    "/opt/webapp/djangoapp/.env": {
+				"content": {
+				    "Fn::Join": [
+					"",
+					[
+					    "DBNAME=", {"Ref":"DBName"}, "\n",
+					    "DBUSER=", {"Ref":"DBUsername"}, "\n",
+					    "DBPASSWD=", {"Ref":"DBPassword"}, "\n",
+					    "GMAPSKEY=", {"Ref":"GoogleMapsAPIKey"}, "\n",
+					    "DEBUG=True\n"
+					]
+				    ]},
+				"mode"  : "000400",
+				"owner" : "fuzzy",
+				"group" : "fuzzy"
+			    }
+			},
+			"commands": {
+			    "01_set_mysql_root_password" : {
+				"command" : {
+				    "Fn::Join" : ["",
+						  ["mysqladmin -u root password '", { "Ref" : "DBRootPassword" }, "'"]
+						 ]
+				}
+			    },
+			    "02_create_database" : {
+				"command" : {
+				    "Fn::Join" : ["",
+						  ["mysql -u root --password='", { "Ref" : "DBRootPassword" }, "' < /tmp/setup.mysql"]
+						 ]
+				}
+			    },
+			    "03_discard_setup": {
+				"command": "rm /tmp/setup.mysql"
+			    }
+			}
+		    },
+		    "final-setup": {
+			"files": {
+			    "/tmp/djangouser.py": {
+				"content": {
+				    "Fn::Join": [
+					"",
+					[
+					    "from django.contrib.auth.models import User\n",
+					    "user = User.objects.filter(username='",
+					    {"Ref":"SiteAdminUsername"},"').get()\n",
+					    "user.set_password('",{"Ref":"SiteAdminPassword"},"')\n",
+					    "user.save()\n"
+					]
+				    ]
+				}
+			    }
+			},
+			"commands": {
+			    "01_make_secret": {
+				"command": "head -c 50 /dev/random | base64 | sed 's/^/SECRET_KEY=/' >> /opt/webapp/djangoapp/.env"
+			    },
+			    "02_chown": {
+				"command": "chown -R fuzzy:fuzzy /opt/webapp"
+			    },
+			    "03_pip_install": {
+				"command": "pip install -r requirements.txt",
+				"cwd": "/opt/webapp/"
+			    },
+			    "04_migrate": {
+				"command": "python manage.py migrate",
+				"cwd": "/opt/webapp/djangoapp"
+			    },
+			    "05_npm_install": {
+				"command": "npm install",
+				"cwd": "/opt/webapp/djangoapp/website/rollup"
+			    },
+			    "06_npx_build": {
+				"command": "npx rollup -c",
+				"cwd": "/opt/webapp/djangoapp/website/rollup"
+			    },
+			    "07_create_admin": {
+				"command": {
+				    "Fn::Join": [
+					"",
+					[
+					    "python manage.py createsuperuser --noinput --username ",
+					    {"Ref": "SiteAdminUsername"},
+					    " --email ",{"Ref":"SiteAdminEmail"}
+					]
+				    ]
+				},
+				"cwd": "/opt/webapp/djangoapp"
+			    },
+			    "07_admin_passwd": {
+				"command": "cat /tmp/djangouser.py | python manage.py shell",
+				"cwd": "/opt/webapp/djangoapp"
+			    },
+			    "08_discard_djangouser": {
+				"command": "rm /tmp/djagouser.py"
+			    }
+			}
+		    }
+                },
+                "AWS::CloudFormation::Designer": {
+                    "id": "3589cf62-03ba-420c-91b5-c302e860c921"
+                }
+            },
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "InstanceSecurityGroup"
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "ImageId": {
+                    "Fn::FindInMap": [
+                        "AWSRegionAMIEC2",
+                        {
+                            "Ref": "AWS::Region"
+                        },
+                        "Ubuntu20"
+                    ]
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "apt-get update -y\n",
+				"apt-get dist-upgrade -y\n",
+                                "mkdir -p /opt/aws/bin\n",
+                                "wget https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz\n",
+                                "python3 -m easy_install --script-dir /opt/aws/bin aws-cfn-bootstrap-py3-latest.tar.gz\n",
+                                "/opt/aws/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource EC2Instance ",
+                                "         --configsets full_install ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "/opt/aws/bin/cfn-signal -e $? ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource EC2Instance ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "InstanceSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Enable SSH access via port 22",
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 80,
+                        "ToPort": 80,
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 443,
+                        "ToPort": 443,
+                        "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": {
+                            "Ref": "SSHLocation"
+                        }
+                    }
+                ]
+            },
+            "Metadata": {
+                "AWS::CloudFormation::Designer": {
+                    "id": "ec1d01d1-85e2-40bf-a79d-d45dd0a669d7"
+                }
+            }
+        }
+    }
+}
