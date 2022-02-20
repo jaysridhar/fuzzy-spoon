@@ -18,7 +18,16 @@
     <div class="tab-content" id="myTab-content">
       <div class="tab-pane fade show active"
 	   id="tab-new" >
+	<div id="new-toolbar" class="d-flex">
+	  <button class="approve-btn new-btn btn btn-primary mr-2" disabled>
+	    <i class="fas fa-check"></i> Approve
+	  </button>
+	  <button class="disapprove-btn new-btn btn btn-info" disabled>
+	    <i class="fas fa-ban"></i> Disapprove
+	  </button>
+	</div>
 	<table id="new-table"
+	       data-toolbar="#new-toolbar"
 	       class="table table-bordered table-striped"></table>
       </div>
       <div class="tab-pane fade"

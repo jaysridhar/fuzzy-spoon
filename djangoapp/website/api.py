@@ -64,3 +64,58 @@ def load_user_location(request, status=None):
         return resp
     else:
         return HttpResponseNotAllowed(f'{request.method} not allowed')
+    
+def modify_user_location(status, locid_or_arr):
+    res = {'status': {}, 'errors': {}}
+    if type(locid_or_arr) == list:
+        for locid in locid_or_arr:
+            try:
+                uloc = UserLocation.objects.get(pk=locid)
+                uloc.status = status
+                uloc.save()
+                res['status'][locid] = 'ok'
+            except Exception as ex:
+                res['errors'][locid] = str(ex)
+    else:
+        locid = locid_or_arr
+        try:
+            uloc = UserLocation.objects.get(pk=locid)
+            uloc.status = status
+            uloc.save()
+            res['status'][locid] = 'ok'
+        except Exception as ex:
+            res['errors'][locid] = str(ex)
+        res
+    return res
+
+@csrf_exempt
+@login_required
+def approve_user_location(request, locid=None):
+    if request.method == 'POST':
+        if locid:
+            res = modify_user_location('approved', locid)
+            return JsonResponse(res, safe=False)
+        else:
+            if len(request.body.strip()) == 0:
+                return HttpResponseBadRequest('no body content - must include JSON of ids to modify')
+            data = json.loads(request.body)
+            res = modify_user_location('approved', data)
+            return JsonResponse(res, safe=False)
+    else:
+        return HttpResponseNotAllowed(f'{request.method} not allowed')
+
+@csrf_exempt
+@login_required
+def disapprove_user_location(request, locid=None):
+    if request.method == 'POST':
+        if locid:
+            res = modify_user_location('disapproved', locid)
+            return JsonResponse(res, safe=False)
+        else:
+            if len(request.body.strip()) == 0:
+                return HttpResponseBadRequest('no body content - must include JSON of ids to modify')
+            data = json.loads(request.body)
+            res = modify_user_location('disapproved', data)
+            return JsonResponse(res, safe=False)
+    else:
+        return HttpResponseNotAllowed(f'{request.method} not allowed')

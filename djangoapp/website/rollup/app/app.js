@@ -58,37 +58,9 @@ function make_load_complete($tableEl)
 function setupNew()
 {
     let $tableEl = $('#new-table');
-    let columns = buildColumns($tableEl);
-    $tableEl.bootstrapTable({
-	columns: columns,
-	uniqueId: 'id',
-	sidePagination: 'server',
-	ajax: make_refresh_func('/api/admin/status/new', 'new', prepare_userloc),
-	pagination: true,
-	showColumns: true,
-	clickToSelect: true,
-	showColumnsSearch: true,
-	showRefresh: true,
-	search: true,
-	showExtendedPagination: true,
-	cookie: true,
-	cookieIdTable: 'completed',
-	cookieExpire: '7d',
-	showMultiSort: true,
-	sortPriority: [],
-	rowStyle: (row, index) => {return { classes: 'show-completed-menu' }},
-	onLoadSuccess: make_load_complete($tableEl),
-	//onSearch: make_on_search($tableEl),
-    })
-}
-
-function setupCompleted()
-{
-    let $tableEl = $('#new-table');
-    $tableEl.data('taskQ', new TaskQueue(() => $tableEl.bootstrapTable('refresh')));
-    let columns = buildColumns($tableEl, columnTitlesArr),
-	updateBtn = () => $('.completed-btn').prop('disabled', $tableEl.bootstrapTable('getSelections').length == 0),
-	changeBtnState = row => updateBtn();
+    let columns = buildColumns($tableEl),
+	updateBtn = () => $('.new-btn').prop('disabled', $tableEl.bootstrapTable('getSelections').length == 0),
+	changeBtnState = row => updateBtn();;
     $tableEl.bootstrapTable({
 	columns: columns,
 	uniqueId: 'id',
@@ -112,11 +84,39 @@ function setupCompleted()
 	onUncheck: changeBtnState,
 	onUncheckAll: changeBtnState,
 	onLoadSuccess: make_load_complete($tableEl),
-	onSearch: make_on_search($tableEl),
+	//onSearch: make_on_search($tableEl),
+    })
+}
+
+function setupApproved()
+{
+    let $tableEl = $('#approved-table');
+    let columns = buildColumns($tableEl);
+    $tableEl.bootstrapTable({
+	columns: columns,
+	uniqueId: 'id',
+	sidePagination: 'server',
+	ajax: make_refresh_func('/api/admin/status/approved', 'approved', prepare_userloc),
+	pagination: true,
+	showColumns: true,
+	clickToSelect: true,
+	showColumnsSearch: true,
+	showRefresh: true,
+	search: true,
+	showExtendedPagination: true,
+	cookie: true,
+	cookieIdTable: 'approved',
+	cookieExpire: '7d',
+	showMultiSort: true,
+	sortPriority: [],
+	rowStyle: (row, index) => {return { classes: 'show-completed-menu' }},
+	onLoadSuccess: make_load_complete($tableEl),
+	//onSearch: make_on_search($tableEl),
     })
 }
 
 $(function() {
     console.log('loaded app.js');
     setupNew();
+    setupApproved();
 })
