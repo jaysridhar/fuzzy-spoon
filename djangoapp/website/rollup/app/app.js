@@ -11,10 +11,9 @@ dayjs.extend(utc);
 
 function buildColumns($tableEl, titlesArr)
 {
-    const addressFormatTmpl = $('#address-format-tmpl').html();
-    const addressFormatter = (value, row) => {
-	return ut.renderString(addressFormatTmpl, {'addr': value});
-    }
+    const addressFormatTmpl = $('#address-format-tmpl').html(),
+	  addressFormatter = (value, row) => ut.renderString(addressFormatTmpl, {'addr': value}),
+	  dateFormatter = (value, row) => dayjs(value.replace('(:\d\d)\.\d+Z.*','$1'), 'YYYY-MM-DD"T"HH:mm:ss').format('YYYY-MM-DD HH:mm:ss');
     let columns = [{ field: "id",
 		     title: "ID",
 		     sortable: true },
@@ -30,6 +29,10 @@ function buildColumns($tableEl, titlesArr)
 		   { field: '_google_loc',
 		     title: 'Address',
 		     formatter: addressFormatter,
+		     sortable: true },
+		   { field: 'obtained_at',
+		     title: 'Date',
+		     formatter: dateFormatter,
 		     sortable: true }
 		  ];
     if ( !titlesArr ) titlesArr = columns.map(x => x.title);
