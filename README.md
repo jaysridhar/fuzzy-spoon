@@ -96,3 +96,8 @@ Here is the full procedure to get the application running on AWS.
 - An alert should pop up asking for your permission to allow the
   website to fetch your location. Once it is allowed, the location
   will be saved to the database.
+
+- To view the admin page where you can approve/disapprove users, click
+  the "Login" button. Login with the credentials you specified earlier
+  when you created the AWS stack. You will be taken to the Admin site.
+  ![admin site](admin-site.png)
