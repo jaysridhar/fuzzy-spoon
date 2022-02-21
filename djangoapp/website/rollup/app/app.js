@@ -121,8 +121,60 @@ function setupApproved()
     })
 }
 
+function makeApproveDisapproveFn(status)
+{
+    return (ev, $modal) => {
+	let arr = $modal.find('tr[data-id]').get().map(el => parseInt($(el).data('id'))),
+	    $tableEl = $modal.data('tableEl');
+	$modal
+	    .find('.apply-action')
+	    .prop('disabled', true)
+	    .append('<span> <div class="spinner-border spinner-border-sm"></div></span>');
+	$tableEl.bootstrapTable('uncheckAll');
+	const doneFn = () => $modal.find('.apply-action').prop('disabled', false).find('span').remove();
+	$.ajax({
+	    method: 'POST',
+	    url: `/api/admin/${status}/`,
+	    contentType: 'application/json',
+	    data: JSON.stringify({ locid: arr }),
+	    headers: { 'X-CSRFToken': ut.getCookieValue('csrftoken') },
+	}).done(function(resp, status, jqxhr) {
+	    console.log('done(%O), arr = %O', arguments, arr);
+	    doneFn();
+	    setTimeout(() => $modal.modal('hide'), 3000);
+	}).fail(function(jqxhr, status) {
+	    console.log('fail(%O)', arguments);
+	    doneFn();
+	})
+    }
+}
+
 $(function() {
     console.log('loaded app.js');
     setupNew();
     setupApproved();
+
+    $('.approve,.disapprove').click(ev => {
+	let $tableEl = $($(ev.target).closest('div.tab-pane').find('table.table')),
+	    selected = $tableEl.bootstrapTable('getSelections'),
+	    status = $(ev.target).hasClass('approve') ? 'approve' : 'disapprove',
+	    label = status.charAt(0).toUpperCase() + status.slice(1);
+	fetch('/assets/templates/confirm-user.html')
+	    .then(response => response.text())
+	    .then(async function(page) {
+		const str = ut.renderString(page, {
+		    selected: selected,
+		    question: `Are you sure you want to <span class="text-red-600">${status}</span> the following users?`,
+		});
+		ut.doModal({
+		    title: `${label} Users`,
+		    message: str,
+		    okRequired: true,
+		    sizeClass: 'modal-lg',
+		    okText: label,
+		    okAction: makeApproveDisapproveFn(status),
+		}).then($modal => $modal.data({'tableEl': $tableEl}));
+	    })
+    });
+
 })

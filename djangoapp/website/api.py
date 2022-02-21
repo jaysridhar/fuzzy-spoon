@@ -65,10 +65,10 @@ def load_user_location(request, status=None):
     else:
         return HttpResponseNotAllowed(f'{request.method} not allowed')
     
-def modify_user_location(status, locid_or_arr):
+def modify_user_location(status, data):
     res = {'status': {}, 'errors': {}}
-    if type(locid_or_arr) == list:
-        for locid in locid_or_arr:
+    if type(data) == dict:
+        for locid in data['locid']:
             try:
                 uloc = UserLocation.objects.get(pk=locid)
                 uloc.status = status
@@ -77,7 +77,7 @@ def modify_user_location(status, locid_or_arr):
             except Exception as ex:
                 res['errors'][locid] = str(ex)
     else:
-        locid = locid_or_arr
+        locid = int(data)
         try:
             uloc = UserLocation.objects.get(pk=locid)
             uloc.status = status
@@ -99,6 +99,7 @@ def approve_user_location(request, locid=None):
             if len(request.body.strip()) == 0:
                 return HttpResponseBadRequest('no body content - must include JSON of ids to modify')
             data = json.loads(request.body)
+            print(f'json data is: {data}')
             res = modify_user_location('approved', data)
             return JsonResponse(res, safe=False)
     else:
@@ -109,13 +110,14 @@ def approve_user_location(request, locid=None):
 def disapprove_user_location(request, locid=None):
     if request.method == 'POST':
         if locid:
-            res = modify_user_location('disapproved', locid)
+            res = modify_user_location('denied', locid)
             return JsonResponse(res, safe=False)
         else:
             if len(request.body.strip()) == 0:
                 return HttpResponseBadRequest('no body content - must include JSON of ids to modify')
             data = json.loads(request.body)
-            res = modify_user_location('disapproved', data)
+            print(f'json data is: {data}')
+            res = modify_user_location('denied', data)
             return JsonResponse(res, safe=False)
     else:
         return HttpResponseNotAllowed(f'{request.method} not allowed')

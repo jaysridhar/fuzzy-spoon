@@ -1,0 +1,24 @@
+<p class="font-bold pb-4">{{question|safe}}</p>
+<table id="action-table"
+       class="table table-striped table-bordered w-100">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Latitude</th>
+      <th>Longitude</th>
+      <th>Address</th>
+    </tr>
+  </thead>
+  <tbody>
+    {%for row in selected%}
+    <tr data-id="{{row.id}}">
+      <td>{{row.id}}</td>
+      <td>{{row.latitude}}</td>
+      <td>{{row.longitude}}</td>
+      <td>{{row._google_loc[0].formatted_address}}</td>
+    </tr>
+    {%endfor%}
+  </tbody>
+</table>
+<div class="output">{{morecontent | safe}}</div>
+<div class="errors"></div>
